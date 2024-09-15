@@ -37,7 +37,7 @@ class _MainViewState extends State<MainView> {
         ],
       ),
 
-      body: ChoiceCard(choice: Choice(id: '1', name: 'Do homework', weight: 1)),
+      body: ChoiceCard(choice: Choice(id: '1', name: 'Do homework', weight: Weight(amount: 3, name: "Important"))),
 
 
       bottomNavigationBar: BottomAppBar(

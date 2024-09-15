@@ -17,7 +17,22 @@ class ChoiceCard extends StatelessWidget {
           padding: const EdgeInsets.all(8.0),
           child: Row(
             children: [
-              Expanded(child: Text(choice.name)),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      choice.name,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    Text(
+                      choice.weight.name,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                )
+              ),
             ],
           ),
         ),

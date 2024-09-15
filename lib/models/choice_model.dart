@@ -1,7 +1,18 @@
+class Weight {
+  int amount;
+  String name;
+
+  Weight({
+    required this.amount,
+    required this.name
+  });
+}
+
 class Choice {
   String id; // Identifier
   String name;
-  int weight;
+
+  Weight weight;
 
   Choice({
     required this.id,
