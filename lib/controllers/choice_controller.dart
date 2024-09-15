@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:indecision_machine/models/choice_model.dart';
 import 'package:indecision_machine/widgets/choice_card.dart';
@@ -51,6 +53,26 @@ class ChoiceController extends ChangeNotifier {
     choices.removeWhere((c) => c.id == choice.id);
     await saveChoices();
     notifyListeners();
+  }
+
+  Choice getRandomChoice() {
+    if (choices.isEmpty) {
+      throw Exception("No choices available");
+    }
+
+    int totalWeight = choices.fold(0, (sum, choice) => sum + choice.weight.amount);
+    int randomWeight = Random().nextInt(totalWeight) + 1;
+
+    int cumulativeWeight = 0;
+    for (var choice in choices) {
+      cumulativeWeight += choice.weight.amount;
+      if (randomWeight <= cumulativeWeight) {
+        return choice;
+      }
+    }
+
+    // This should never happen, but return the last choice if it does
+    return choices.last;
   }
 
   Widget buildChoiceList() {

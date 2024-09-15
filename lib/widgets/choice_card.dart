@@ -31,7 +31,7 @@ class ChoiceCard extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     Text(
-                      choice.weight.name,
+                      "${choice.weight.name} (${choice.weight.amount})",
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],

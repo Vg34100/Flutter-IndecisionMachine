@@ -73,7 +73,40 @@ class _MainViewState extends State<MainView> {
           children: [
             Expanded(
               child: ElevatedButton(
-                onPressed: () {}, 
+                onPressed: () {
+                  showDialog(
+                    context: context, 
+                    builder: (context) => Dialog(
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16.0),
+                        ),
+                      child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        maxWidth: 400, // To not extend the modal across the whole width
+                        minWidth: 300,
+                        maxHeight: MediaQuery.of(context).size.height * 0.8,
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Center(
+                              child: Text("You should do:")
+                            ),
+                          ),
+                          SizedBox(height: 10,),
+                          Center(
+                            child: ElevatedButton(child: Text(_choiceController.getRandomChoice().name), onPressed: () {  })
+                          ),
+                          SizedBox(height: 30,),
+                        ],
+                      ),
+                      ),
+                    )
+                  );
+
+                }, 
                 child: const Text("Make a Choice!")
               )
             ),
