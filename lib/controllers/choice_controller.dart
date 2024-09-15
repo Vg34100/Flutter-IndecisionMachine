@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:indecision_machine/models/choice_model.dart';
+import 'package:indecision_machine/widgets/choice_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -52,5 +53,18 @@ class ChoiceController extends ChangeNotifier {
     notifyListeners();
   }
 
+  Widget buildChoiceList() {
+    List<Widget> choiceListWidgets = [];
+
+    choiceListWidgets.addAll(
+      choices.map((choice) => ChoiceCard(
+        choice: choice, 
+        onDelete: () => deleteChoice(choice)))
+    );
+
+    return ListView(
+      children: choiceListWidgets,
+    );
+  }
 
 }

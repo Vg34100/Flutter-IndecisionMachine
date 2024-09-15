@@ -4,11 +4,14 @@ import 'package:indecision_machine/models/choice_model.dart';
 
 class ChoiceCard extends StatelessWidget {
   final Choice choice;
-  final ChoiceController _choiceController = ChoiceController();
 
-  ChoiceCard({
+  final VoidCallback onDelete;
+
+  const ChoiceCard({
     super.key, 
-    required this.choice
+    required this.choice,
+
+    required this.onDelete,
   });
 
   @override
@@ -36,7 +39,7 @@ class ChoiceCard extends StatelessWidget {
                 )
               ),
               IconButton(onPressed: () {
-                _choiceController.deleteChoice(choice);
+                  onDelete();
                 }, 
                 icon: const Icon(Icons.delete)
               )

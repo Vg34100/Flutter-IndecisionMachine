@@ -63,9 +63,9 @@ class _MainViewState extends State<MainView> {
         ],
       ),
 
-      body: isLoading ? Text("Loading...") : ChoiceCard(choice: _choiceController.choices[0]),
-
-
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _choiceController.buildChoiceList(),
       bottomNavigationBar: BottomAppBar(
         child: Row(
           children: [
