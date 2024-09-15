@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:indecision_machine/controllers/choice_controller.dart';
 import 'package:indecision_machine/controllers/theme_controller.dart';
-import 'package:indecision_machine/widgets/choice_card.dart';
+
+import 'package:flutter/material.dart';
+import 'package:indecision_machine/models/choice_model.dart';
+import 'package:indecision_machine/views/add_choice_view.dart';
 import 'package:provider/provider.dart';
 
 class MainView extends StatefulWidget{
@@ -75,7 +77,30 @@ class _MainViewState extends State<MainView> {
                 child: const Text("Make a Choice!")
               )
             ),
-            IconButton(onPressed: () {}, icon: const Icon(Icons.add))
+            IconButton(
+              onPressed: () async {
+                var newChoice = await showDialog<Choice>(
+                  context: context, 
+                  builder: (context) => Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16.0),
+                      ),
+                    child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: 400, // To not extend the modal across the whole width
+                      minWidth: 300,
+                      maxHeight: MediaQuery.of(context).size.height * 0.8,
+                    ),
+                    child: const AddChoiceView(),
+                    ),
+                  )
+                );
+
+              if (newChoice != null) {
+              await _choiceController.addChoice(newChoice);
+              }
+              }, 
+              icon: const Icon(Icons.add))
           ],
         )
       ),
