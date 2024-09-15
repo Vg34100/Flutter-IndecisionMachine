@@ -11,6 +11,17 @@ class ChoiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(choice.name);
+    return Card(
+      child: InkWell(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            children: [
+              Expanded(child: Text(choice.name)),
+            ],
+          ),
+        ),
+      )
+    );
   }
 }
