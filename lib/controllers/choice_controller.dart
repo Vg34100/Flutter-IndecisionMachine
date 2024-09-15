@@ -34,4 +34,23 @@ class ChoiceController extends ChangeNotifier {
     }
   }
 
+  Future<void> saveChoices() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> choicesJson = choices.map((choice) => choice.toJson()).toList();
+    await prefs.setStringList(choicesKey, choicesJson);
+  }
+
+  Future<void> addChoice(Choice choice) async {
+    choices.add(choice);
+    await saveChoices();
+    notifyListeners(); 
+  }
+
+  Future<void> deleteChoice(Choice choice) async {
+    choices.removeWhere((c) => c.id == choice.id);
+    await saveChoices();
+    notifyListeners();
+  }
+
+
 }

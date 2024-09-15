@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:indecision_machine/controllers/choice_controller.dart';
 import 'package:indecision_machine/controllers/theme_controller.dart';
-import 'package:indecision_machine/models/choice_model.dart';
 import 'package:indecision_machine/widgets/choice_card.dart';
 import 'package:provider/provider.dart';
 
