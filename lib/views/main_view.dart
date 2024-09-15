@@ -12,7 +12,9 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
-    return const Text("Hello World?");
+    return Scaffold(
+      body: Text("Hello World?"),
+    );
   }
 
 }
