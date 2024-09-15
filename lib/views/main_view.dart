@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:indecision_machine/controllers/choice_controller.dart';
 import 'package:indecision_machine/controllers/theme_controller.dart';
 import 'package:indecision_machine/models/choice_model.dart';
 import 'package:indecision_machine/widgets/choice_card.dart';
@@ -13,6 +14,32 @@ class MainView extends StatefulWidget{
 }
 
 class _MainViewState extends State<MainView> {
+  final ChoiceController _choiceController = ChoiceController();
+  bool isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _choiceController.addListener(_onControllerUpdate);
+    _loadChoices();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _choiceController.addListener(_onControllerUpdate);
+  }
+
+  void _onControllerUpdate() {
+    setState(() {});
+  }
+
+  Future<void> _loadChoices() async {
+    await _choiceController.loadChoices();
+    setState(() {
+      isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +48,7 @@ class _MainViewState extends State<MainView> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("The Indecision Machine"),
+        title: const Text("The Indecision Machine"),
         centerTitle: true,
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                 // Add the toggle button to the AppBar actions
@@ -37,7 +64,7 @@ class _MainViewState extends State<MainView> {
         ],
       ),
 
-      body: ChoiceCard(choice: Choice(id: '1', name: 'Do homework', weight: Weight(amount: 3, name: "Important"))),
+      body: isLoading ? Text("Loading...") : ChoiceCard(choice: _choiceController.choices[0]),
 
 
       bottomNavigationBar: BottomAppBar(
@@ -46,7 +73,7 @@ class _MainViewState extends State<MainView> {
             Expanded(
               child: ElevatedButton(
                 onPressed: () {}, 
-                child: Text("Make a Choice!")
+                child: const Text("Make a Choice!")
               )
             ),
             IconButton(onPressed: () {}, icon: const Icon(Icons.add))
