@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+/*
+ https://stackoverflow.com/questions/60232070/how-to-implement-dark-mode-and-light-mode-in-flutter
+ I like having a theme option
+*/
 class MyAppThemes {
   static final lightTheme = ThemeData(
     colorScheme: ColorScheme.fromSeed(

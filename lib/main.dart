@@ -1,13 +1,35 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:indecision_machine/controllers/choice_controller.dart';
 import 'package:indecision_machine/controllers/theme_controller.dart';
 import 'package:indecision_machine/themes/app_themes.dart';
 import 'package:indecision_machine/views/main_view.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MainApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeController()),
+        ChangeNotifierProvider(create: (_) => ChoiceController()),
+      ],
+      child: const MainApp(),
+    ),
+  );
+}
+
+/*
+ https://stackoverflow.com/questions/73006804/how-can-i-get-flutter-to-scroll-with-mouse-drag-instead-of-scroll-wheel-linux
+ Count not get the scrolling to work, turns out there is a trackpad option
+*/
+class MyCustomScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+        PointerDeviceKind.touch,
+        PointerDeviceKind.mouse,
+        PointerDeviceKind.trackpad,
+      };
 }
 
 class MainApp extends StatelessWidget {
@@ -25,7 +47,7 @@ class MainApp extends StatelessWidget {
           darkTheme: MyAppThemes.darkTheme,
           themeMode: themeController.themeMode,
           home: const MainView(),
-          scrollBehavior: const MaterialScrollBehavior().copyWith( dragDevices: {PointerDeviceKind.mouse, PointerDeviceKind.touch},),
+          scrollBehavior: MyCustomScrollBehavior(),
         );
       },
     );

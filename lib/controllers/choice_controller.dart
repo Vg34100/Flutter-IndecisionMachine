@@ -1,92 +1,104 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:indecision_machine/models/choice_model.dart';
-import 'package:indecision_machine/widgets/choice_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
 class ChoiceController extends ChangeNotifier {
-  List<Choice> choices = [];
+  List<Choice> _choices = [];
   static const String choicesKey = 'choices_key';
+  bool _isLoading = true; 
 
+  // Getter to expose choices to the view without allowing direct modification
+  List<Choice> get choices => List.unmodifiable(_choices);
+
+  // Getter for loading state
+  bool get isLoading => _isLoading;
+
+  ChoiceController() {
+    loadChoices();
+  }
+
+  // Load choices from SharedPreferences
   Future<void> loadChoices() async {
-    if (choices.isNotEmpty) {
+    if (_choices.isNotEmpty) {
+      _isLoading = false;
+      notifyListeners();
       return;
     }
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? choicesJson = prefs.getStringList(choicesKey);
 
     if (choicesJson != null) {
-      choices = choicesJson.map((choiceJson) => Choice.fromJson(choiceJson)).toList();
+      _choices = choicesJson.map((choiceJson) => Choice.fromJson(choiceJson)).toList();
     } else {
       // Initialize with default choices if no data is found
-      choices = [
+      _choices = [
         Choice(
-          id: const Uuid().v4(), 
-          name: "Work on 3390 Project", 
-          weight: Weight(amount: 1, name: "Unimportant")
+          id: const Uuid().v4(),
+          name: "Work on 3390 Project",
+          weight: Weight(amount: 1, name: "Unimportant"),
         ),
         Choice(
-          id: const Uuid().v4(), 
-          name: "Playing Video Games", 
-          weight: Weight(amount: 3, name: "Important")
+          id: const Uuid().v4(),
+          name: "Playing Video Games",
+          weight: Weight(amount: 3, name: "Important"),
         ),
       ];
-      // save the choices
+      await saveChoices(); // Save the default choices
     }
+    _isLoading = false;
+    notifyListeners(); // Notify listeners that choices have been loaded
   }
 
+  // Save choices to SharedPreferences
   Future<void> saveChoices() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> choicesJson = choices.map((choice) => choice.toJson()).toList();
+    List<String> choicesJson = _choices.map((choice) => choice.toJson()).toList();
     await prefs.setStringList(choicesKey, choicesJson);
   }
 
+  // Add a new choice
   Future<void> addChoice(Choice choice) async {
-    choices.add(choice);
+    _choices.add(choice);
     await saveChoices();
-    notifyListeners(); 
+    notifyListeners(); // Notify listeners of the change
   }
 
-  Future<void> deleteChoice(Choice choice) async {
-    choices.removeWhere((c) => c.id == choice.id);
+  // Delete an existing choice by ID
+  Future<void> deleteChoice(String id) async {
+    _choices.removeWhere((c) => c.id == id);
     await saveChoices();
-    notifyListeners();
+    notifyListeners(); // Notify listeners of the change
   }
 
+  // Get a random choice based on weight
   Choice getRandomChoice() {
-    if (choices.isEmpty) {
+    if (_choices.isEmpty) {
       throw Exception("No choices available");
     }
 
-    int totalWeight = choices.fold(0, (sum, choice) => sum + choice.weight.amount);
+    int totalWeight = _choices.fold(0, (sum, choice) => sum + choice.weight.amount);
     int randomWeight = Random().nextInt(totalWeight) + 1;
 
     int cumulativeWeight = 0;
-    for (var choice in choices) {
+    for (var choice in _choices) {
       cumulativeWeight += choice.weight.amount;
       if (randomWeight <= cumulativeWeight) {
         return choice;
       }
     }
 
-    // This should never happen, but return the last choice if it does
-    return choices.last;
+    // Fallback, should not be reached
+    return _choices.last;
   }
 
-  Widget buildChoiceList() {
-    List<Widget> choiceListWidgets = [];
-
-    choiceListWidgets.addAll(
-      choices.map((choice) => ChoiceCard(
-        choice: choice, 
-        onDelete: () => deleteChoice(choice)))
-    );
-
-    return ListView(
-      children: choiceListWidgets,
-    );
+  // Helper method to get a choice by its ID
+  Choice? getChoiceById(String id) {
+    try {
+      return _choices.firstWhere((choice) => choice.id == id);
+    } catch (e) {
+      return null;
+    }
   }
-
 }

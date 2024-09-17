@@ -3,13 +3,13 @@ import 'package:indecision_machine/models/choice_model.dart';
 import 'package:uuid/uuid.dart';
 
 class AddChoiceView extends StatefulWidget {
-  const AddChoiceView({Key? key}) : super(key: key);
+  const AddChoiceView({super.key});
 
   @override
-  _AddChoiceViewState createState() => _AddChoiceViewState();
+  AddChoiceViewState createState() => AddChoiceViewState();
 }
 
-class _AddChoiceViewState extends State<AddChoiceView> {
+class AddChoiceViewState extends State<AddChoiceView> {
   final _formKey = GlobalKey<FormState>();
 
   String name = '';
