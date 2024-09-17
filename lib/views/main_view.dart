@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:indecision_machine/controllers/choice_controller.dart';
 import 'package:indecision_machine/models/choice_model.dart';
+import 'package:indecision_machine/themes/app_themes.dart';
 import 'package:indecision_machine/views/add_choice_view.dart';
 import 'package:indecision_machine/widgets/choice_card.dart';
 import 'package:indecision_machine/widgets/custom_app_bar.dart';
@@ -72,6 +73,7 @@ class _MainViewState extends State<MainView> {
                 ),
               ),
             ),
+
       // Bottom Navigation Bar with "Decide", "Add", and "Remove" buttons
       bottomNavigationBar: Container(
         padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
@@ -80,7 +82,7 @@ class _MainViewState extends State<MainView> {
           mainAxisSize: MainAxisSize.min, // Ensures the column takes minimal vertical space
           children: [
             // "Decide" Button
-            ElevatedButton(
+            ElevatedButton.icon(
               onPressed: choiceController.choices.isNotEmpty
                   ? () {
                       try {
@@ -116,18 +118,14 @@ class _MainViewState extends State<MainView> {
                       }
                     }
                   : null, // Disable if no choices
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(
-                    vertical: 16.0, horizontal: 32.0),
-                textStyle: Theme.of(context).textTheme.headlineLarge,
-                minimumSize: const Size(double.infinity, 50), // Make it full-width and larger
-              ),
-              child: const Text("Decide"),
+              style: MyAppThemes.elevatedLargeButtonStyle(context),
+              icon: const Icon(Icons.window),
+              label: const Text("Decide",),
             ),
             const SizedBox(height: 8.0),
             // "Add" and "Remove" Buttons in a Row
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // "Add" Button
                 ElevatedButton.icon(
@@ -153,11 +151,15 @@ class _MainViewState extends State<MainView> {
                       await choiceController.addChoice(newChoice);
                     }
                   },
+                  style: MyAppThemes.elevatedButtonStyle(context),
                   icon: const Icon(Icons.add),
                   label: const Text("Add"),
                 ),
+
+                const SizedBox(width: 10,),
+
                 // "Remove" Button
-                ElevatedButton(
+                ElevatedButton.icon(
                   onPressed: _selectedChoiceId != null
                       ? () async {
                           await choiceController.deleteChoice(_selectedChoiceId!);
@@ -166,14 +168,9 @@ class _MainViewState extends State<MainView> {
                           });
                         }
                       : null, // Disable if no selection
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Theme.of(context).colorScheme.secondaryContainer, // Use theme's error color
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0, horizontal: 32.0),
-                    minimumSize: const Size(150, 50), // Ensure consistent sizing
-                  ),
-                  child: const Text("Remove"),
+                  style: MyAppThemes.elevatedSecondaryButtonStyle(context),
+                  icon: const Icon(Icons.delete),
+                  label: const Text("Remove"),
                 ),
               ],
             ),
