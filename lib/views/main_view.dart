@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:indecision_machine/controllers/choice_controller.dart';
-import 'package:indecision_machine/controllers/theme_controller.dart';
 import 'package:indecision_machine/models/choice_model.dart';
 import 'package:indecision_machine/views/add_choice_view.dart';
 import 'package:indecision_machine/widgets/choice_card.dart';
+import 'package:indecision_machine/widgets/custom_app_bar.dart';
 import 'package:provider/provider.dart';
 
 class MainView extends StatefulWidget {
@@ -18,26 +18,11 @@ class _MainViewState extends State<MainView> {
 
   @override
   Widget build(BuildContext context) {
-    final themeController = Provider.of<ThemeController>(context);
     final choiceController = Provider.of<ChoiceController>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text("The Indecision Machine"),
-        centerTitle: true,
-        backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-        // Theme toggle button
-        actions: [
-          IconButton(
-            icon: Icon(themeController.themeMode == ThemeMode.dark
-                ? Icons.light_mode
-                : Icons.dark_mode),
-            onPressed: () {
-              themeController.toggleTheme();
-            },
-          ),
-        ],
-      ),
+      appBar: const CustomAppBar(title: "The Indecision Machine"),
+
       body: choiceController.isLoading
           ? const Center(child: CircularProgressIndicator())
           : SafeArea(
