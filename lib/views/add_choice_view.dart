@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:indecision_machine/models/choice_model.dart';
+import 'package:indecision_machine/models/weight_model.dart';
 import 'package:uuid/uuid.dart';
 
 class AddChoiceView extends StatefulWidget {
