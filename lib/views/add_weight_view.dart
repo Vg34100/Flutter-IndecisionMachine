@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:indecision_machine/models/weight.dart';
 
 class AddWeightView extends StatefulWidget {
-  const AddWeightView({super.key});
+  final List<Weight> existingWeights;
+
+  const AddWeightView({super.key, required this.existingWeights});
+
 
   @override
   AddWeightViewState createState() => AddWeightViewState();
@@ -50,7 +53,15 @@ return SingleChildScrollView(
                       Expanded(
                         child: TextFormField(
                           decoration: const InputDecoration(labelText: 'Category Name'),
-                          validator: (value) => value!.isEmpty ? 'Enter a category name' : null,
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Enter a category name';
+                            }
+                            if (widget.existingWeights.any((weight) => weight.name.toLowerCase() == value.toLowerCase())) {
+                              return 'A category with this name already exists';
+                            }
+                            return null;
+                          },                          
                           onSaved: (value) => name = value!,
                         ),
                       ),

@@ -148,7 +148,7 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
             minWidth: 300,
             maxHeight: MediaQuery.of(context).size.height * 0.8,
           ),
-          child: const AddWeightView(),
+          child: AddWeightView(existingWeights: _weightController.getWeights(),),
         ),
       ),
     );

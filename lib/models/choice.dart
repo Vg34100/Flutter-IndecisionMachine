@@ -22,6 +22,11 @@ class Choice {
     };
   }
 
+  /*
+  https://stackoverflow.com/questions/53931513/store-data-as-an-object-in-shared-preferences-in-flutter
+  Where the method of using SharedPreferences comes from.
+  */
+
   factory Choice.fromMap(Map<String, dynamic> map) {
     return Choice(
       id: map['id'], 
