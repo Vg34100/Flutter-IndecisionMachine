@@ -18,6 +18,7 @@ class MainView extends StatefulWidget {
 class MainViewState extends State<MainView> implements ChoiceView {
   // Listeners
   VoidCallback? _addListener;
+  VoidCallback? _newAddListener;
   VoidCallback? _removeListener;
   VoidCallback? _decideListener;
 
@@ -42,11 +43,15 @@ class MainViewState extends State<MainView> implements ChoiceView {
   }
 
   // Implement ChoiceView interface methods
-
   @override
   void attachAddChoiceListener(VoidCallback listener) {
     _addListener = listener;
   }
+
+  @override
+  void attachNewAddListener(VoidCallback listener) {
+    _newAddListener = listener;
+  } 
 
   @override
   void attachRemoveChoiceListener(VoidCallback listener) {
@@ -97,7 +102,36 @@ class MainViewState extends State<MainView> implements ChoiceView {
     );
   }
 
-  
+    @override
+    void showOptionsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return SimpleDialog(
+          title: const Text('Add'),
+          children: [
+            SimpleDialogOption(
+              child: const Text('Choice'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                if (_addListener != null) {
+                  _addListener!();
+                }
+              },
+            ),
+            SimpleDialogOption(
+              child: const Text('Category'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
 
   @override
   void showDecision(String decision) {
@@ -201,7 +235,7 @@ class MainViewState extends State<MainView> implements ChoiceView {
               children: [
                 // "Add" Button
                 ElevatedButton.icon(
-                  onPressed: _addListener,
+                  onPressed: _newAddListener,
                   style: MyAppThemes.elevatedButtonStyle(context),
                   icon: const Icon(Icons.add),
                   label: const Text("Add"),

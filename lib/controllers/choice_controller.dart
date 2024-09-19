@@ -11,6 +11,8 @@ class ChoiceController {
   ChoiceController(this._view) {
     // Attach listeners
     _view.attachAddChoiceListener(_handleAddChoice);
+    _view.attachNewAddListener(_handleNewAddChoice);
+
     _view.attachRemoveChoiceListener(_handleRemoveChoice);
     _view.attachDecideListener(_handleDecide);
 
@@ -32,6 +34,11 @@ class ChoiceController {
       _view.clearSelection();
     }
   }
+
+  void _handleNewAddChoice() {
+    _view.showOptionsDialog();
+  }
+
 
   void _handleRemoveChoice() async {
     // Get the selected choice index
