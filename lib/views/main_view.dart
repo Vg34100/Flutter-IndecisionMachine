@@ -1,126 +1,198 @@
+// lib/views/main_view.dart
 import 'package:flutter/material.dart';
-import 'package:indecision_machine/controllers/choice_controller.dart';
-import 'package:indecision_machine/models/choice_model.dart';
+import 'package:indecision_machine/models/choice.dart';
 import 'package:indecision_machine/themes/app_themes.dart';
-import 'package:indecision_machine/views/add_choice_view.dart';
+import 'package:indecision_machine/views/choice_view.dart';
+import 'package:indecision_machine/controllers/choice_controller.dart';
 import 'package:indecision_machine/widgets/choice_card.dart';
 import 'package:indecision_machine/widgets/custom_app_bar.dart';
-import 'package:provider/provider.dart';
+import 'package:indecision_machine/views/add_choice_view.dart';
 
 class MainView extends StatefulWidget {
   const MainView({super.key});
 
   @override
-  State<StatefulWidget> createState() => _MainViewState();
+  MainViewState createState() => MainViewState();
 }
 
-class _MainViewState extends State<MainView> {
-  String? _selectedChoiceId; // Tracks the selected choice
+class MainViewState extends State<MainView> implements ChoiceView {
+  // Listeners
+  VoidCallback? _addListener;
+  VoidCallback? _removeListener;
+  VoidCallback? _decideListener;
+
+  // Data
+  List<Choice> _choices = [];
+  int? _selectedIndex;
+
+  late ChoiceController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    // Instantiate the controller, passing this view
+    _controller = ChoiceController(this);
+    // The controller will attach the listeners
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  // Implement ChoiceView interface methods
+
+  @override
+  void attachAddChoiceListener(VoidCallback listener) {
+    _addListener = listener;
+  }
+
+  @override
+  void attachRemoveChoiceListener(VoidCallback listener) {
+    _removeListener = listener;
+  }
+
+  @override
+  void attachDecideListener(VoidCallback listener) {
+    _decideListener = listener;
+  }
+
+  @override
+  void updateChoiceList(List<Choice> choices) {
+    setState(() {
+      _choices = choices;
+    });
+  }
+
+  @override
+  int getSelectedChoiceIndex() {
+    return _selectedIndex ?? -1;
+  }
+
+  @override
+  void clearSelection() {
+    setState(() {
+      _selectedIndex = null;
+    });
+  }
+
+  @override
+  Future<Choice?> showAddChoiceDialog() async {
+    return await showDialog<Choice>(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 400,
+            minWidth: 300,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: const AddChoiceView(),
+        ),
+      ),
+    );
+  }
+
+  
+
+  @override
+  void showDecision(String decision) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Your Decision"),
+        content: Text(decision),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  void showNoChoicesDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("No Choices Available"),
+        content: const Text("Please add some choices first."),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text("OK"),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final choiceController = Provider.of<ChoiceController>(context);
-
     return Scaffold(
       appBar: const CustomAppBar(title: "The Indecision Machine"),
-
-      body: choiceController.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    // "Choices" Label
-                    const Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Choices",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Scrollable list of choices
-                    Expanded(
-                      child: choiceController.choices.isEmpty
-                          ? const Center(
-                              child: Text("No choices available. Add some!"),
-                            )
-                          : ListView.builder(
-                              itemCount: choiceController.choices.length,
-                              itemBuilder: (context, index) {
-                                final choice = choiceController.choices[index];
-                                return ChoiceCard(
-                                  choice: choice,
-                                  isSelected: choice.id == _selectedChoiceId,
-                                  onTap: () {
-                                    setState(() {
-                                      if (_selectedChoiceId == choice.id) {
-                                        _selectedChoiceId = null; // Deselect if already selected
-                                      } else {
-                                        _selectedChoiceId = choice.id; // Select the new choice
-                                      }
-                                    });
-                                  },
-                                );
-                              },
-                            ),
-                    ),
-                  ],
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Column(
+          children: [
+            // "Choices" Label
+            const Padding(
+              padding: EdgeInsets.fromLTRB(8.0, 0, 0, 0),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Choices",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
             ),
-
+            const SizedBox(height: 8),
+            // Scrollable list of choices
+            Expanded(
+              child: _choices.isEmpty
+                  ? const Center(
+                      child: Text("No choices available. Add some!"),
+                    )
+                  : ListView.builder(
+                      itemCount: _choices.length,
+                      itemBuilder: (context, index) {
+                        final choice = _choices[index];
+                        return ChoiceCard(
+                          choice: choice,
+                          isSelected: _selectedIndex == index,
+                          onTap: () {
+                            setState(() {
+                              _selectedIndex = _selectedIndex == index ? null : index;
+                            });
+                          },
+                        );
+                      },
+                    ),
+            ),
+          ],
+        ),
+      ),
       // Bottom Navigation Bar with "Decide", "Add", and "Remove" buttons
-      bottomNavigationBar: Container(
-        padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
-        color: Theme.of(context).colorScheme.surface,
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisSize: MainAxisSize.min, // Ensures the column takes minimal vertical space
           children: [
             // "Decide" Button
             ElevatedButton.icon(
-              onPressed: choiceController.choices.isNotEmpty
-                  ? () {
-                      try {
-                        Choice chosen = choiceController.getRandomChoice();
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("Your Decision"),
-                            content: Text(chosen.name),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text("OK"),
-                              ),
-                            ],
-                          ),
-                        );
-                      } catch (e) {
-                        // Handle when no choices
-                        showDialog(
-                          context: context,
-                          builder: (context) => AlertDialog(
-                            title: const Text("No Choices Available"),
-                            content: const Text("Please add some choices first."),
-                            actions: [
-                              TextButton(
-                                onPressed: () => Navigator.of(context).pop(),
-                                child: const Text("OK"),
-                              ),
-                            ],
-                          ),
-                        );
-                      }
-                    }
-                  : null, // Disable if no choices
+              onPressed: _choices.isNotEmpty ? _decideListener : null,
               style: MyAppThemes.elevatedLargeButtonStyle(context),
               icon: const Icon(Icons.window),
-              label: const Text("Decide",),
+              label: const Text("Decide"),
             ),
             const SizedBox(height: 8.0),
             // "Add" and "Remove" Buttons in a Row
@@ -129,45 +201,15 @@ class _MainViewState extends State<MainView> {
               children: [
                 // "Add" Button
                 ElevatedButton.icon(
-                  onPressed: () async {
-                    var newChoice = await showDialog<Choice>(
-                      context: context,
-                      builder: (context) => Dialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0),
-                        ),
-                        child: ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxWidth: 400, // Prevent modal from being too wide
-                            minWidth: 300,
-                            maxHeight: MediaQuery.of(context).size.height * 0.8,
-                          ),
-                          child: const AddChoiceView(),
-                        ),
-                      ),
-                    );
-      
-                    if (newChoice != null) {
-                      await choiceController.addChoice(newChoice);
-                    }
-                  },
+                  onPressed: _addListener,
                   style: MyAppThemes.elevatedButtonStyle(context),
                   icon: const Icon(Icons.add),
                   label: const Text("Add"),
                 ),
-
                 const SizedBox(width: 10,),
-
                 // "Remove" Button
                 ElevatedButton.icon(
-                  onPressed: _selectedChoiceId != null
-                      ? () async {
-                          await choiceController.deleteChoice(_selectedChoiceId!);
-                          setState(() {
-                            _selectedChoiceId = null; // Clear selection after removal
-                          });
-                        }
-                      : null, // Disable if no selection
+                  onPressed: _selectedIndex != null ? _removeListener : null,
                   style: MyAppThemes.elevatedSecondaryButtonStyle(context),
                   icon: const Icon(Icons.delete),
                   label: const Text("Remove"),

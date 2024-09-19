@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:indecision_machine/models/choice_model.dart';
-import 'package:indecision_machine/models/weight_model.dart';
+import 'package:indecision_machine/models/choice.dart';
+import 'package:indecision_machine/models/weight.dart';
 import 'package:uuid/uuid.dart';
 
 class AddChoiceView extends StatefulWidget {
@@ -74,8 +74,23 @@ class AddChoiceViewState extends State<AddChoiceView> {
                   TextFormField(
                     decoration: const InputDecoration(labelText: 'Weight Amount'),
                     keyboardType: TextInputType.number,
-                    validator: (value) => value!.isEmpty ? 'Enter weight amount' : null,
-                    onSaved: (value) => amount = int.parse(value!),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a weight amount';
+                      }
+                      if (int.tryParse(value) == null) {
+                        return 'Please enter a valid integer';
+                      }
+                      int? parsedValue = int.tryParse(value);
+                      if (parsedValue != null && parsedValue <= 0) {
+                        return 'Please enter a positive integer';
+                      }
+                      return null;
+                    },
+                    onSaved: (value) {
+                      // This will only be called if validation passes
+                      amount = int.parse(value!);
+                    },
                   ),
                   const SizedBox(height: 30),
                   // Action Buttons

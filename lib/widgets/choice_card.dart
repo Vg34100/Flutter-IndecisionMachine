@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:indecision_machine/models/choice_model.dart';
+import 'package:indecision_machine/models/choice.dart';
 
 class ChoiceCard extends StatelessWidget {
   final Choice choice;

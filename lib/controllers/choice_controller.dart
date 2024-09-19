@@ -1,105 +1,63 @@
-import 'dart:math';
-import 'package:flutter/material.dart';
+// lib/controllers/choice_controller.dart
 import 'package:indecision_machine/models/choice_model.dart';
-import 'package:indecision_machine/models/weight_model.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:indecision_machine/models/choice.dart';
+import 'package:indecision_machine/views/choice_view.dart';
 import 'package:uuid/uuid.dart';
 
-class ChoiceController extends ChangeNotifier {
-  List<Choice> _choices = [];
-  static const String choicesKey = 'choices_key';
-  bool _isLoading = true; 
+class ChoiceController {
+  final ChoiceView _view;
+  final ChoiceModel _model = ChoiceModel();
 
-  // Getter to expose choices to the view without allowing direct modification
-  List<Choice> get choices => List.unmodifiable(_choices);
+  ChoiceController(this._view) {
+    // Attach listeners
+    _view.attachAddChoiceListener(_handleAddChoice);
+    _view.attachRemoveChoiceListener(_handleRemoveChoice);
+    _view.attachDecideListener(_handleDecide);
 
-  // Getter for loading state
-  bool get isLoading => _isLoading;
-
-  ChoiceController() {
-    loadChoices();
+    // Initialize
+    _initialize();
   }
 
-  // Load choices from SharedPreferences
-  Future<void> loadChoices() async {
-    if (_choices.isNotEmpty) {
-      _isLoading = false;
-      notifyListeners();
+  Future<void> _initialize() async {
+    await _model.loadChoices();
+    _view.updateChoiceList(_model.choices);
+  }
+
+  void _handleAddChoice() async {
+    // Request the view to show the add choice dialog
+    Choice? newChoice = await _view.showAddChoiceDialog();
+    if (newChoice != null) {
+      await _model.addChoice(newChoice);
+      _view.updateChoiceList(_model.choices);
+      _view.clearSelection();
+    }
+  }
+
+  void _handleRemoveChoice() async {
+    // Get the selected choice index
+    int selectedIndex = _view.getSelectedChoiceIndex();
+    if (selectedIndex == -1) return;
+
+    // Remove the choice from the model
+    Choice choiceToRemove = _model.choices[selectedIndex];
+    await _model.deleteChoice(choiceToRemove.id);
+
+    // Update the view
+    _view.updateChoiceList(_model.choices);
+    _view.clearSelection();
+  }
+
+  void _handleDecide() {
+    if (_model.choices.isEmpty) {
+      _view.showNoChoicesDialog();
       return;
     }
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String>? choicesJson = prefs.getStringList(choicesKey);
 
-    if (choicesJson != null) {
-      _choices = choicesJson.map((choiceJson) => Choice.fromJson(choiceJson)).toList();
-    } else {
-      // Initialize with default choices if no data is found
-      _choices = [
-        Choice(
-          id: const Uuid().v4(),
-          name: "Work on 3390 Project",
-          weight: Weight(amount: 1, name: "Unimportant"),
-        ),
-        Choice(
-          id: const Uuid().v4(),
-          name: "Playing Video Games",
-          weight: Weight(amount: 3, name: "Important"),
-        ),
-      ];
-      await saveChoices(); // Save the default choices
-    }
-    _isLoading = false;
-    notifyListeners(); // Notify listeners that choices have been loaded
+    Choice chosen = _model.getRandomChoice();
+    _view.showDecision(chosen.name);
   }
 
-  // Save choices to SharedPreferences
-  Future<void> saveChoices() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    List<String> choicesJson = _choices.map((choice) => choice.toJson()).toList();
-    await prefs.setStringList(choicesKey, choicesJson);
-  }
-
-  // Add a new choice
-  Future<void> addChoice(Choice choice) async {
-    _choices.add(choice);
-    await saveChoices();
-    notifyListeners(); // Notify listeners of the change
-  }
-
-  // Delete an existing choice by ID
-  Future<void> deleteChoice(String id) async {
-    _choices.removeWhere((c) => c.id == id);
-    await saveChoices();
-    notifyListeners(); // Notify listeners of the change
-  }
-
-  // Get a random choice based on weight
-  Choice getRandomChoice() {
-    if (_choices.isEmpty) {
-      throw Exception("No choices available");
-    }
-
-    int totalWeight = _choices.fold(0, (sum, choice) => sum + choice.weight.amount);
-    int randomWeight = Random().nextInt(totalWeight) + 1;
-
-    int cumulativeWeight = 0;
-    for (var choice in _choices) {
-      cumulativeWeight += choice.weight.amount;
-      if (randomWeight <= cumulativeWeight) {
-        return choice;
-      }
-    }
-
-    // Fallback, should not be reached
-    return _choices.last;
-  }
-
-  // Helper method to get a choice by its ID
-  Choice? getChoiceById(String id) {
-    try {
-      return _choices.firstWhere((choice) => choice.id == id);
-    } catch (e) {
-      return null;
-    }
+  void dispose() {
+    // Clean up if necessary
   }
 }

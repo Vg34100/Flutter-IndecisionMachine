@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:indecision_machine/controllers/choice_controller.dart';
 import 'package:indecision_machine/controllers/theme_controller.dart';
 import 'package:indecision_machine/themes/app_themes.dart';
 import 'package:indecision_machine/views/main_view.dart';
@@ -12,7 +11,7 @@ void main() {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeController()),
-        ChangeNotifierProvider(create: (_) => ChoiceController()),
+        //ChangeNotifierProvider(create: (_) => ChoiceController()),
       ],
       child: const MainApp(),
     ),
