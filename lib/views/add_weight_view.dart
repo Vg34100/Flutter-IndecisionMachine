@@ -1,29 +1,21 @@
 import 'package:flutter/material.dart';
-import 'package:indecision_machine/controllers/weight_controller.dart';
-import 'package:indecision_machine/models/choice.dart';
 import 'package:indecision_machine/models/weight.dart';
-import 'package:indecision_machine/views/weight_view.dart';
-import 'package:uuid/uuid.dart';
 
-class AddChoiceView extends StatefulWidget {
-  final List<Weight> weights;
-
-  const AddChoiceView({super.key, required this.weights});
+class AddWeightView extends StatefulWidget {
+  const AddWeightView({super.key});
 
   @override
-  AddChoiceViewState createState() => AddChoiceViewState();
+  AddWeightViewState createState() => AddWeightViewState();
 }
 
-class AddChoiceViewState extends State<AddChoiceView> {
+class AddWeightViewState extends State<AddWeightView> {
   final _formKey = GlobalKey<FormState>();
-
   String name = '';
-  Weight? selectedWeight;
-
+  int amount = 1;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Material(
@@ -38,7 +30,7 @@ class AddChoiceViewState extends State<AddChoiceView> {
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
                       child: Text(
-                        'Add New Choice',
+                        'Add New Category',
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
                     ),
@@ -57,8 +49,8 @@ class AddChoiceViewState extends State<AddChoiceView> {
                       // Choice Name
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Choice Name'),
-                          validator: (value) => value!.isEmpty ? 'Enter a choice name' : null,
+                          decoration: const InputDecoration(labelText: 'Category Name'),
+                          validator: (value) => value!.isEmpty ? 'Enter a category name' : null,
                           onSaved: (value) => name = value!,
                         ),
                       ),
@@ -66,20 +58,26 @@ class AddChoiceViewState extends State<AddChoiceView> {
                   ),
                   const SizedBox(height: 15),
                   const Divider(),
-                  DropdownButtonFormField<Weight>(
-                    value: selectedWeight,
-                    items: widget.weights.map((Weight weight) {
-                      return DropdownMenuItem<Weight>(
-                        value: weight,
-                        child: Text('${weight.name} (${weight.amount})'),
-                      );
-                    }).toList(),
-                    onChanged: (Weight? value) {
-                      setState(() {
-                        selectedWeight = value;
-                      });
+                  TextFormField(
+                    decoration: const InputDecoration(labelText: 'Weight Amount'),
+                    keyboardType: TextInputType.number,
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a weight amount';
+                      }
+                      if (int.tryParse(value) == null) {
+                        return 'Please enter a valid integer';
+                      }
+                      int? parsedValue = int.tryParse(value);
+                      if (parsedValue != null && parsedValue <= 0) {
+                        return 'Please enter a positive integer';
+                      }
+                      return null;
                     },
-                    decoration: const InputDecoration(labelText: 'Select Weight'),
+                    onSaved: (value) {
+                      // This will only be called if validation passes
+                      amount = int.parse(value!);
+                    },
                   ),
                   const SizedBox(height: 30),
                   // Action Buttons
@@ -98,12 +96,11 @@ class AddChoiceViewState extends State<AddChoiceView> {
                         onPressed: () {
                           if (_formKey.currentState!.validate()) {
                             _formKey.currentState!.save();
-                            Choice newChoice = Choice(
-                              id: const Uuid().v4(),
+                            Weight newWeight = Weight(
                               name: name,
-                              weight: selectedWeight ?? Weight(name: "Default", amount: 1),
+                              amount: amount,
                             );
-                            Navigator.of(context).pop(newChoice); // Return the new choice
+                            Navigator.of(context).pop(newWeight); // Return the new choice
                           }
                         },
                       ),
@@ -116,9 +113,5 @@ class AddChoiceViewState extends State<AddChoiceView> {
       )
     );
   }
-  
 
-  
-
-  
 }

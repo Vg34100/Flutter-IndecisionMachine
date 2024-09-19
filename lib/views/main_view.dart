@@ -1,9 +1,13 @@
 // lib/views/main_view.dart
 import 'package:flutter/material.dart';
+import 'package:indecision_machine/controllers/weight_controller.dart';
 import 'package:indecision_machine/models/choice.dart';
+import 'package:indecision_machine/models/weight.dart';
 import 'package:indecision_machine/themes/app_themes.dart';
+import 'package:indecision_machine/views/add_weight_view.dart';
 import 'package:indecision_machine/views/choice_view.dart';
 import 'package:indecision_machine/controllers/choice_controller.dart';
+import 'package:indecision_machine/views/weight_view.dart';
 import 'package:indecision_machine/widgets/choice_card.dart';
 import 'package:indecision_machine/widgets/custom_app_bar.dart';
 import 'package:indecision_machine/views/add_choice_view.dart';
@@ -15,25 +19,33 @@ class MainView extends StatefulWidget {
   MainViewState createState() => MainViewState();
 }
 
-class MainViewState extends State<MainView> implements ChoiceView {
+class MainViewState extends State<MainView> implements ChoiceView, WeightView {
   // Listeners
   VoidCallback? _addListener;
   VoidCallback? _newAddListener;
+
+  VoidCallback? _addWeightListener;
+
+
   VoidCallback? _removeListener;
   VoidCallback? _decideListener;
 
   // Data
   List<Choice> _choices = [];
+  List<Weight> _weights = [];
   int? _selectedIndex;
+  Weight? _selectedWeight;
 
   late ChoiceController _controller;
+  late WeightController _weightController;
+
 
   @override
   void initState() {
     super.initState();
     // Instantiate the controller, passing this view
     _controller = ChoiceController(this);
-    // The controller will attach the listeners
+    _weightController = WeightController(this);
   }
 
   @override
@@ -82,6 +94,26 @@ class MainViewState extends State<MainView> implements ChoiceView {
     });
   }
 
+
+  // Implement WeightView methods
+  @override
+  void attachAddWeightListener(VoidCallback listener) { 
+    setState(() => _addWeightListener = listener);
+  }
+
+  @override
+  void updateWeightList(List<Weight> weights) { 
+    setState(() => _weights = weights);
+  }
+
+  @override
+  void updateSelectedWeight(Weight weight) { 
+    setState(() => _selectedWeight = weight);
+  }
+
+
+
+
   @override
   Future<Choice?> showAddChoiceDialog() async {
     return await showDialog<Choice>(
@@ -96,14 +128,34 @@ class MainViewState extends State<MainView> implements ChoiceView {
             minWidth: 300,
             maxHeight: MediaQuery.of(context).size.height * 0.8,
           ),
-          child: const AddChoiceView(),
+          child: AddChoiceView(weights: _weightController.getWeights(),),
         ),
       ),
     );
   }
 
-    @override
-    void showOptionsDialog() {
+  @override
+  Future<Weight?> showAddWeightDialog() async {
+    return await showDialog<Weight>(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 400,
+            minWidth: 300,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: const AddWeightView(),
+        ),
+      ),
+    );
+  }
+
+  @override
+  void showOptionsDialog() {
     showDialog(
       context: context,
       builder: (context) {
@@ -123,6 +175,9 @@ class MainViewState extends State<MainView> implements ChoiceView {
               child: const Text('Category'),
               onPressed: () {
                 Navigator.of(context).pop();
+                if (_addWeightListener != null) {
+                  _addWeightListener!();
+                }
               },
             ),
           ],
@@ -255,4 +310,5 @@ class MainViewState extends State<MainView> implements ChoiceView {
       ),
     );
   }
+
 }

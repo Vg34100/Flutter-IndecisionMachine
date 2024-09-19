@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Weight {
   int amount;
   String name;
@@ -19,4 +21,9 @@ class Weight {
       amount: map['amount'], 
       name: map['name']);
   }
+
+  String toJson() => json.encode(toMap());
+
+  factory Weight.fromJson(String source) => Weight.fromMap(json.decode(source));
+
 }

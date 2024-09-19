@@ -2,6 +2,7 @@
 import 'dart:ui';
 
 import 'package:indecision_machine/models/choice.dart';
+import 'package:indecision_machine/models/weight.dart';
 
 abstract class ChoiceView {
   void attachAddChoiceListener(VoidCallback listener);

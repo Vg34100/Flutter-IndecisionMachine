@@ -14,6 +14,9 @@ class ChoiceModel {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? choicesJson = prefs.getStringList(choicesKey);
 
+      print("Loaded choices JSON: $choicesJson"); // Debug print
+
+
     if (choicesJson != null) {
       _choices = choicesJson.map((choiceJson) => Choice.fromJson(choiceJson)).toList();
     } else {
@@ -39,6 +42,9 @@ class ChoiceModel {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String> choicesJson = _choices.map((choice) => choice.toJson()).toList();
     await prefs.setStringList(choicesKey, choicesJson);
+
+    print("Saved weights: $choicesJson"); // Debug print
+
   }
 
   // Get a copy of the choices list
