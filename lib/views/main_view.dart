@@ -32,9 +32,7 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
 
   // Data
   List<Choice> _choices = [];
-  List<Weight> _weights = [];
   int? _selectedIndex;
-  Weight? _selectedWeight;
 
   late ChoiceController _controller;
   late WeightController _weightController;
@@ -94,7 +92,6 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
     });
   }
 
-
   // Implement WeightView methods
   @override
   void attachAddWeightListener(VoidCallback listener) { 
@@ -103,16 +100,11 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
 
   @override
   void updateWeightList(List<Weight> weights) { 
-    setState(() => _weights = weights);
   }
 
   @override
   void updateSelectedWeight(Weight weight) { 
-    setState(() => _selectedWeight = weight);
   }
-
-
-
 
   @override
   Future<Choice?> showAddChoiceDialog() async {

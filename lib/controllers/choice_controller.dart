@@ -1,12 +1,7 @@
 // lib/controllers/choice_controller.dart
 import 'package:indecision_machine/models/choice_model.dart';
 import 'package:indecision_machine/models/choice.dart';
-import 'package:indecision_machine/models/weight.dart';
-import 'package:indecision_machine/models/weight_model.dart';
 import 'package:indecision_machine/views/choice_view.dart';
-import 'package:indecision_machine/views/weight_view.dart';
-import 'package:uuid/uuid.dart';
-
 class ChoiceController {
   final ChoiceView _view;
   final ChoiceModel _model = ChoiceModel();
@@ -19,7 +14,6 @@ class ChoiceController {
     _view.attachRemoveChoiceListener(_handleRemoveChoice);
     _view.attachDecideListener(_handleDecide);
 
-    // Initialize
     _initialize();
   }
 
