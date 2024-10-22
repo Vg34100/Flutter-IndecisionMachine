@@ -33,7 +33,7 @@ return SingleChildScrollView(
                     padding: const EdgeInsets.all(8.0),
                     child: Center(
                       child: Text(
-                        'Add New Category',
+                        'Add New Weight',
                         style: Theme.of(context).textTheme.headlineMedium,
                       ),
                     ),
@@ -52,7 +52,7 @@ return SingleChildScrollView(
                       // Choice Name
                       Expanded(
                         child: TextFormField(
-                          decoration: const InputDecoration(labelText: 'Category Name'),
+                          decoration: const InputDecoration(labelText: 'Weight Name'),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
                               return 'Enter a category name';
@@ -100,6 +100,9 @@ return SingleChildScrollView(
                         onPressed: () {
                           Navigator.of(context).pop(); // Close the dialog
                         },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary, // Use onPrimary color for the text
+                        ),
                       ),
                       const SizedBox(width: 10),
                       ElevatedButton(
@@ -114,6 +117,9 @@ return SingleChildScrollView(
                             Navigator.of(context).pop(newWeight); // Return the new choice
                           }
                         },
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Theme.of(context).colorScheme.onPrimary, // Use onPrimary color for the text
+                        ),
                       ),
                     ],
                   ),

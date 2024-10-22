@@ -24,7 +24,7 @@ class MyAppThemes {
       primary: Color.fromARGB(255, 19, 21, 22), // Lighter blue
       onPrimary: Colors.white,
       secondary: Color.fromARGB(255, 52, 49, 57), // Muted lavender
-      onSecondary: Colors.black87,
+      onSecondary: Colors.white,
       surface: Color(0xFF1E1E1E), // Dark gray for cards
       onSurface: Colors.white,
       onPrimaryContainer: Colors.white,

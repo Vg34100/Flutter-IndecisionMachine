@@ -1,18 +1,21 @@
 // lib/controllers/choice_controller.dart
+import 'package:indecision_machine/models/category.dart';
 import 'package:indecision_machine/models/choice_model.dart';
 import 'package:indecision_machine/models/choice.dart';
 import 'package:indecision_machine/views/choice_view.dart';
 class ChoiceController {
   final ChoiceView _view;
   final ChoiceModel _model = ChoiceModel();
+  Category? _selectedCategory; // Track the selected category
 
   ChoiceController(this._view) {
     // Attach listeners
     _view.attachAddChoiceListener(_handleAddChoice);
     _view.attachNewAddListener(_handleNewAddChoice);
-
     _view.attachRemoveChoiceListener(_handleRemoveChoice);
-    _view.attachDecideListener(_handleDecide);
+    _view.attachDecideListener(() {
+      _handleDecide(_view.getFilteredChoices());  // Get filtered choices from the view
+    });
 
     _initialize();
   }
@@ -36,7 +39,6 @@ class ChoiceController {
     _view.showOptionsDialog();
   }
 
-
   void _handleRemoveChoice() async {
     // Get the selected choice index
     int selectedIndex = _view.getSelectedChoiceIndex();
@@ -51,14 +53,21 @@ class ChoiceController {
     _view.clearSelection();
   }
 
-  void _handleDecide() {
-    if (_model.choices.isEmpty) {
+  // Updated _handleDecide to accept filtered choices
+  void _handleDecide(List<Choice> filteredChoices) {
+    if (filteredChoices.isEmpty) {
       _view.showNoChoicesDialog();
       return;
     }
 
-    Choice chosen = _model.getRandomChoice();
+    // Select a random choice from the filtered list
+    Choice chosen = _model.getRandomChoiceFromList(filteredChoices);
     _view.showDecision(chosen.name);
+  }
+
+  // Method to update the selected category
+  void updateSelectedCategory(Category? category) {
+    _selectedCategory = category;
   }
 
   void dispose() {

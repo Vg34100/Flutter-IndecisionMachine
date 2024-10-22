@@ -1,7 +1,7 @@
 import 'dart:math';
-
 import 'package:indecision_machine/models/choice.dart';
 import 'package:indecision_machine/models/weight.dart';
+import 'package:indecision_machine/models/category.dart'; // Import Tab model
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 
@@ -12,6 +12,7 @@ class ChoiceModel {
   // Load choices from SharedPreferences
   Future<void> loadChoices() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
+    // prefs.clear();
     List<String>? choicesJson = prefs.getStringList(choicesKey);
 
     if (choicesJson != null) {
@@ -23,11 +24,13 @@ class ChoiceModel {
           id: const Uuid().v4(),
           name: "Work on 3390 Project",
           weight: Weight(amount: 1, name: "Unimportant"),
+          tabs: [Category(id: "1", name: "Work")], // Add default tabs
         ),
         Choice(
           id: const Uuid().v4(),
           name: "Playing Video Games",
           weight: Weight(amount: 3, name: "Important"),
+          tabs: [Category(id: "2", name: "Leisure")], // Add default tabs
         ),
       ];
       await saveChoices(); // Save the default choices
@@ -56,17 +59,22 @@ class ChoiceModel {
     await saveChoices();
   }
 
-  // Get a random choice based on weight
+  // Get a random choice from the full list
   Choice getRandomChoice() {
-    if (_choices.isEmpty) {
+    return getRandomChoiceFromList(_choices);
+  }
+
+  // Get a random choice from a filtered list
+  Choice getRandomChoiceFromList(List<Choice> filteredChoices) {
+    if (filteredChoices.isEmpty) {
       throw Exception("No choices available");
     }
 
-    int totalWeight = _choices.fold(0, (sum, choice) => sum + choice.weight.amount);
+    int totalWeight = filteredChoices.fold(0, (sum, choice) => sum + choice.weight.amount);
     int randomWeight = Random().nextInt(totalWeight) + 1;
 
     int cumulativeWeight = 0;
-    for (var choice in _choices) {
+    for (var choice in filteredChoices) {
       cumulativeWeight += choice.weight.amount;
       if (randomWeight <= cumulativeWeight) {
         return choice;
@@ -74,7 +82,7 @@ class ChoiceModel {
     }
 
     // Fallback, should not be reached
-    return _choices.last;
+    return filteredChoices.last;
   }
 
   // Helper method to get a choice by its ID

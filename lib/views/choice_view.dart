@@ -1,5 +1,4 @@
 import 'dart:ui';
-
 import 'package:indecision_machine/models/choice.dart';
 
 abstract class ChoiceView {
@@ -8,7 +7,7 @@ abstract class ChoiceView {
 
   void attachRemoveChoiceListener(VoidCallback listener);
   void attachDecideListener(VoidCallback listener);
-  
+
   void updateChoiceList(List<Choice> choices);
   int getSelectedChoiceIndex();
   void clearSelection();
@@ -16,7 +15,9 @@ abstract class ChoiceView {
   Future<Choice?> showAddChoiceDialog();
   void showOptionsDialog();
 
-
   void showDecision(String decision);
   void showNoChoicesDialog();
+
+  // NEW: Add a method to get filtered choices
+  List<Choice> getFilteredChoices();  // <-- Add this method
 }

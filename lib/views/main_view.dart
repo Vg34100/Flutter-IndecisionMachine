@@ -1,16 +1,19 @@
-// lib/views/main_view.dart
 import 'package:flutter/material.dart';
 import 'package:indecision_machine/controllers/weight_controller.dart';
+import 'package:indecision_machine/controllers/choice_controller.dart';
+import 'package:indecision_machine/controllers/category_controller.dart'; // Import CategoryController
 import 'package:indecision_machine/models/choice.dart';
 import 'package:indecision_machine/models/weight.dart';
+import 'package:indecision_machine/models/category.dart'; // Import Category model
 import 'package:indecision_machine/themes/app_themes.dart';
 import 'package:indecision_machine/views/add_weight_view.dart';
+import 'package:indecision_machine/views/add_choice_view.dart';
+import 'package:indecision_machine/views/add_category_view.dart'; // Import AddCategoryView
 import 'package:indecision_machine/views/choice_view.dart';
-import 'package:indecision_machine/controllers/choice_controller.dart';
 import 'package:indecision_machine/views/weight_view.dart';
+import 'package:indecision_machine/views/category_view.dart'; // Import CategoryView
 import 'package:indecision_machine/widgets/choice_card.dart';
 import 'package:indecision_machine/widgets/custom_app_bar.dart';
-import 'package:indecision_machine/views/add_choice_view.dart';
 
 class MainView extends StatefulWidget {
   const MainView({super.key});
@@ -19,31 +22,36 @@ class MainView extends StatefulWidget {
   MainViewState createState() => MainViewState();
 }
 
-class MainViewState extends State<MainView> implements ChoiceView, WeightView {
+class MainViewState extends State<MainView> implements ChoiceView, WeightView, CategoryView {
   // Listeners
   VoidCallback? _addListener;
   VoidCallback? _newAddListener;
-
   VoidCallback? _addWeightListener;
-
-
+  VoidCallback? _addCategoryListener; // New listener for adding categories
   VoidCallback? _removeListener;
   VoidCallback? _decideListener;
 
   // Data
   List<Choice> _choices = [];
+  List<Category> _categories = []; // Categories list
+  List<Choice> _filteredChoices = []; // Filtered choices based on category selection
+  Category? _selectedCategory; // Track selected category for filtering
   int? _selectedIndex;
 
   late ChoiceController _controller;
   late WeightController _weightController;
-
+  late CategoryController _categoryController; // New controller for categories
 
   @override
   void initState() {
     super.initState();
-    // Instantiate the controller, passing this view
+    // Instantiate controllers, passing this view
     _controller = ChoiceController(this);
     _weightController = WeightController(this);
+    _categoryController = CategoryController(this); // Initialize CategoryController
+
+    // Initially, all choices will be shown (i.e., the "ALL" filter)
+    _filteredChoices = _choices;
   }
 
   @override
@@ -61,7 +69,7 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
   @override
   void attachNewAddListener(VoidCallback listener) {
     _newAddListener = listener;
-  } 
+  }
 
   @override
   void attachRemoveChoiceListener(VoidCallback listener) {
@@ -70,13 +78,16 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
 
   @override
   void attachDecideListener(VoidCallback listener) {
-    _decideListener = listener;
+    _decideListener = listener;  // No need to call the controller directly
   }
+
+
 
   @override
   void updateChoiceList(List<Choice> choices) {
     setState(() {
       _choices = choices;
+      _filterChoices(); // Apply the current filter when choices are updated
     });
   }
 
@@ -92,19 +103,17 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
     });
   }
 
-  // Implement WeightView methods
+  // Implement WeightView interface methods
   @override
-  void attachAddWeightListener(VoidCallback listener) { 
+  void attachAddWeightListener(VoidCallback listener) {
     setState(() => _addWeightListener = listener);
   }
 
   @override
-  void updateWeightList(List<Weight> weights) { 
-  }
+  void updateWeightList(List<Weight> weights) {}
 
   @override
-  void updateSelectedWeight(Weight weight) { 
-  }
+  void updateSelectedWeight(Weight weight) {}
 
   @override
   Future<Choice?> showAddChoiceDialog() async {
@@ -120,7 +129,10 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
             minWidth: 300,
             maxHeight: MediaQuery.of(context).size.height * 0.8,
           ),
-          child: AddChoiceView(weights: _weightController.getWeights(),),
+          child: AddChoiceView(
+            weights: _weightController.getWeights(),
+            categories: _categoryController.getCategories(), // Pass available categories
+          ),
         ),
       ),
     );
@@ -140,10 +152,65 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
             minWidth: 300,
             maxHeight: MediaQuery.of(context).size.height * 0.8,
           ),
-          child: AddWeightView(existingWeights: _weightController.getWeights(),),
+          child: AddWeightView(existingWeights: _weightController.getWeights()),
         ),
       ),
     );
+  }
+
+  // Implement CategoryView interface methods
+  @override
+  void attachAddCategoryListener(VoidCallback listener) {
+    setState(() => _addCategoryListener = listener);
+  }
+
+  @override
+  void updateCategoryList(List<Category> categories) {
+    setState(() {
+      _categories = categories;
+    });
+  }
+
+  @override
+  void updateSelectedCategory(Category category) {}
+
+  @override
+  Future<Category?> showAddCategoryDialog() async {
+    return await showDialog<Category>(
+      context: context,
+      builder: (context) => Dialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16.0),
+        ),
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: 400,
+            minWidth: 300,
+            maxHeight: MediaQuery.of(context).size.height * 0.8,
+          ),
+          child: AddCategoryView(existingCategories: _categoryController.getCategories()),
+        ),
+      ),
+    );
+  }
+
+  // Helper function to return the currently filtered choices
+  List<Choice> getFilteredChoices() {
+    return _filteredChoices;
+  }
+
+  void _filterChoices() {
+    setState(() {
+      if (_selectedCategory == null) {
+        // Show all choices when "ALL" is selected
+        _filteredChoices = _choices;
+      } else {
+        // Only show choices that contain the selected category
+        _filteredChoices = _choices
+            .where((choice) => choice.tabs.contains(_selectedCategory))
+            .toList();
+      }
+    });
   }
 
   @override
@@ -167,6 +234,15 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
               child: const Text('Category'),
               onPressed: () {
                 Navigator.of(context).pop();
+                if (_addCategoryListener != null) {
+                  _addCategoryListener!();
+                }
+              },
+            ),
+            SimpleDialogOption(
+              child: const Text('Weight'),
+              onPressed: () {
+                Navigator.of(context).pop();
                 if (_addWeightListener != null) {
                   _addWeightListener!();
                 }
@@ -177,8 +253,6 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
       },
     );
   }
-
-
 
   @override
   void showDecision(String decision) {
@@ -222,6 +296,30 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
+            // Horizontal scrolling list of categories
+            SizedBox(
+              height: 40, // Adjust height based on your design
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: _categories.length + 1, // Add one for "ALL" option
+                itemBuilder: (context, index) {
+                  if (index == 0) {
+                    return _buildCategoryChip(
+                      category: null, // "ALL" category
+                      label: "ALL",
+                      isSelected: _selectedCategory == null,
+                    );
+                  }
+                  final category = _categories[index - 1];
+                  return _buildCategoryChip(
+                    category: category,
+                    label: category.name,
+                    isSelected: _selectedCategory == category,
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 8),
             // "Choices" Label
             const Padding(
               padding: EdgeInsets.fromLTRB(8.0, 0, 0, 0),
@@ -239,14 +337,14 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
             const SizedBox(height: 8),
             // Scrollable list of choices
             Expanded(
-              child: _choices.isEmpty
+              child: _filteredChoices.isEmpty
                   ? const Center(
                       child: Text("No choices available. Add some!"),
                     )
                   : ListView.builder(
-                      itemCount: _choices.length,
+                      itemCount: _filteredChoices.length,
                       itemBuilder: (context, index) {
-                        final choice = _choices[index];
+                        final choice = _filteredChoices[index];
                         return ChoiceCard(
                           choice: choice,
                           isSelected: _selectedIndex == index,
@@ -270,7 +368,7 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
           children: [
             // "Decide" Button
             ElevatedButton.icon(
-              onPressed: _choices.isNotEmpty ? _decideListener : null,
+              onPressed: _filteredChoices.isNotEmpty ? _decideListener : null,
               style: MyAppThemes.elevatedLargeButtonStyle(context),
               icon: const Icon(Icons.window),
               label: const Text("Decide"),
@@ -287,7 +385,7 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
                   icon: const Icon(Icons.add),
                   label: const Text("Add"),
                 ),
-                const SizedBox(width: 10,),
+                const SizedBox(width: 10),
                 // "Remove" Button
                 ElevatedButton.icon(
                   onPressed: _selectedIndex != null ? _removeListener : null,
@@ -303,4 +401,24 @@ class MainViewState extends State<MainView> implements ChoiceView, WeightView {
     );
   }
 
+  // Helper method to build a category chip (for the horizontal category bar)
+  Widget _buildCategoryChip({
+    required Category? category,
+    required String label,
+    required bool isSelected,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+      child: ChoiceChip(
+        label: Text(label),
+        selected: isSelected,
+        onSelected: (bool selected) {
+          setState(() {
+            _selectedCategory = selected ? category : null;
+            _filterChoices(); // Update the filtered choices
+          });
+        },
+      ),
+    );
+  }
 }
